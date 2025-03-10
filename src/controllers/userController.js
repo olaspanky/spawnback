@@ -38,13 +38,14 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const payload = { user: { id: user.id } };
+    const payload = { user: { id: user._id, username: user.username } }; // Use _id for MongoDB
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
       if (err) throw err;
-      res.json({ token, user: { name: user.username } });
+      res.json({ token, user: { id: user._id, name: user.username } }); // Include user ID in response
     });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 };
+
