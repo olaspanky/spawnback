@@ -85,3 +85,14 @@ exports.deleteItem = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+
+exports.getItemsByUser = async (req, res) => {
+  try {
+    const items = await Item.find({ seller: req.params.userId }).populate('seller', 'username');
+    res.json(items);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
