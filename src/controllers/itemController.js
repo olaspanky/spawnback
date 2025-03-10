@@ -1,4 +1,3 @@
-// controllers/itemController.js
 const Item = require('../models/Items');
 
 exports.createItem = async (req, res) => {
@@ -44,7 +43,45 @@ exports.getItem = async (req, res) => {
   }
 };
 
-// controllers/authController.js
-exports.authTest = (req, res) => {
-  res.json({ message: 'Authenticated!', user: req.user });
+exports.updateItem = async (req, res) => {
+  const { title, price, description, location, category, images } = req.body;
+
+  try {
+    let item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ message: 'Item not found' });
+
+    if (item.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'User not authorized' });
+    }
+
+    item.title = title;
+    item.price = price;
+    item.description = description;
+    item.location = location;
+    item.category = category;
+    item.images = images;
+
+    await item.save();
+    res.json(item);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.deleteItem = async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ message: 'Item not found' });
+
+    if (item.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'User not authorized' });
+    }
+
+    await Item.findByIdAndRemove(req.params.id);
+    res.json({ message: 'Item removed' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
 };
