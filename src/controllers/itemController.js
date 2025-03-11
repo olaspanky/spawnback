@@ -71,18 +71,29 @@ exports.updateItem = async (req, res) => {
 
 exports.deleteItem = async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
+    // Validate ObjectId format
+    const { id } = req.params;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid item ID format' });
+    }
 
+    // Find the item
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Check authorization
     if (item.seller.toString() !== req.user.id) {
       return res.status(403).json({ message: 'User not authorized' });
     }
 
-    await Item.findByIdAndRemove(req.params.id);
+    // Delete the item (use findByIdAndDelete for modern Mongoose)
+    await Item.findByIdAndDelete(id);
     res.json({ message: 'Item removed' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Delete error:', err); // Log full error object
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 

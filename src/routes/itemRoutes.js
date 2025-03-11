@@ -5,7 +5,7 @@ const {
   getItem,
   updateItem,
   deleteItem,
-  getItemsByUser // Add this line
+  getItemsByUser
 } = require('../controllers/itemController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
@@ -20,7 +20,7 @@ router.get('/items', getItems);
 router.get('/items/:id', getItem);
 
 // Get items by user ID (seller)
-router.get('/items/user/:userId', authMiddleware, getItemsByUser); // Add this line
+router.get('/items/user/:userId', authMiddleware, getItemsByUser);
 
 // Update an item by ID
 router.put('/items/:id', authMiddleware, updateItem);
