@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const authRoutes = require('./routes/authRoutes');
+const purchaseRoutes = require('./routes/purchaseRoutes');
 
 const app = express();
 
@@ -32,6 +33,6 @@ cloudinary.config({
 app.use('/api/users', userRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', itemRoutes);
-app.use('/api', authRoutes);
-
+app.use('/api/purchases', purchaseRoutes);
+      
 module.exports = app;

@@ -9,6 +9,11 @@ const ItemSchema = new mongoose.Schema({
   category: { type: String, required: true },
   images: [String],
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  status: {
+    type: String,
+    enum: ['available', 'sold', 'pending'],
+    default: 'available'
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
