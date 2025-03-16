@@ -11,6 +11,7 @@ const {
   releaseFunds,
   retractFunds,
   rateSeller,
+  scheduleMeeting
 } = require('../controllers/purchaseController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -25,5 +26,8 @@ router.get('/:orderId', authMiddleware, getOrderById);      // GET /api/purchase
 router.post('/:orderId/release-funds', authMiddleware, releaseFunds); // POST /api/purchases/:orderId/release-funds - Release funds to seller
 router.post('/:orderId/retract-funds', authMiddleware, retractFunds); // POST /api/purchases/:orderId/retract-funds - Request refund
 router.post('/:orderId/rate-seller', authMiddleware, rateSeller);     // POST /api/purchases/:orderId/rate-seller - Rate the seller
+router.post('/:orderId/schedule-meeting', authMiddleware, scheduleMeeting);
+
+
 
 module.exports = router;

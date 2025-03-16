@@ -322,27 +322,21 @@ exports.verifyPayment = async (req, res) => {
 };
 
 exports.getOrderById = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-
-    const order = await Order.findById(orderId)
-      .populate('item')
-      .populate('seller', 'username verified rating ratingCount scamReports');
-
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+    try {
+      const { orderId } = req.params;
+      const order = await Order.findById(orderId)
+        .populate('item')
+        .populate('seller', 'username verified rating ratingCount scamReports');
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+      if (req.user.id !== order.buyer.toString() && req.user.id !== order.seller.toString()) {
+        return res.status(403).json({ error: 'Unauthorized access to this order' });
+      }
+      res.json(order);
+    } catch (error) {
+      console.error("Get Order Error:", error.message);
+      res.status(500).json({ error: error.message });
     }
-
-    if (req.user.id !== order.buyer.toString() && req.user.id !== order.seller.toString()) {
-      return res.status(403).json({ error: 'Unauthorized access to this order' });
-    }
-
-    res.json(order);
-  } catch (error) {
-    console.error("Get Order Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-};
+  };
 
 // New endpoints from orderController.js
 exports.releaseFunds = async (req, res) => {
@@ -423,6 +417,35 @@ exports.rateSeller = async (req, res) => {
   }
 };
 
+exports.scheduleMeeting = async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const { location, time } = req.body;
+      const order = await Order.findById(orderId);
+  
+      if (order.buyer.toString() !== req.user.id || order.trackingStatus !== 'paid') {
+        return res.status(403).json({ error: 'Unauthorized or invalid status' });
+      }
+  
+      order.trackingStatus = 'meeting_scheduled';
+      order.meetingDetails = { location, time }; // Add this field to your schema
+      await order.save();
+  
+      // Optional: Add a system message to chat
+      const Message = require('../models/Message');
+      await Message.create({
+        orderId,
+        content: `Meeting proposed at ${location} on ${new Date(time).toLocaleString()}. Seller, please confirm.`,
+        isSystemMessage: true,
+      });
+  
+      res.json(order);
+    } catch (error) {
+      console.error("Schedule Meeting Error:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
 // Export all functions
 module.exports = {
   createOrder: exports.createOrderRoute,
@@ -433,4 +456,5 @@ module.exports = {
   releaseFunds: exports.releaseFunds,
   retractFunds: exports.retractFunds,
   rateSeller: exports.rateSeller,
+  scheduleMeeting: exports.scheduleMeeting,
 };

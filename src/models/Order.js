@@ -57,6 +57,10 @@ const OrderSchema = new mongoose.Schema({
     default: 'paid'
   },
   refundReason: { type: String },
+  meetingDetails: {
+    location: { type: String },
+    time: { type: Date },
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
