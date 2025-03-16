@@ -1,3 +1,5 @@
+// 
+
 // routes/purchaseRoutes.js
 const express = require('express');
 const {
@@ -5,7 +7,10 @@ const {
   getUserPurchases,
   getUserSales,
   verifyPayment,
-  getOrderById, // Imported correctly
+  getOrderById,
+  releaseFunds,
+  retractFunds,
+  rateSeller,
 } = require('../controllers/purchaseController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -17,5 +22,8 @@ router.get('/purchases', authMiddleware, getUserPurchases); // GET /api/purchase
 router.get('/sales', authMiddleware, getUserSales);         // GET /api/purchases/sales - Get user's sales
 router.post('/verify-payment', authMiddleware, verifyPayment); // POST /api/purchases/verify-payment - Verify payment
 router.get('/:orderId', authMiddleware, getOrderById);      // GET /api/purchases/:orderId - Get order by ID
+router.post('/:orderId/release-funds', authMiddleware, releaseFunds); // POST /api/purchases/:orderId/release-funds - Release funds to seller
+router.post('/:orderId/retract-funds', authMiddleware, retractFunds); // POST /api/purchases/:orderId/retract-funds - Request refund
+router.post('/:orderId/rate-seller', authMiddleware, rateSeller);     // POST /api/purchases/:orderId/rate-seller - Rate the seller
 
 module.exports = router;

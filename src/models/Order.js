@@ -1,36 +1,64 @@
-// models/Order.js remains unchanged
+// // models/Order.js remains unchanged
+// const mongoose = require('mongoose');
+
+// const orderSchema = new mongoose.Schema({
+//   buyer: { 
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   seller: { 
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   item: { 
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'Item',
+//     required: true
+//   },
+//   price: {
+//     type: Number,
+//     required: true
+//   },
+//   paymentReference: {
+//     type: String,
+//     required: true,
+//     unique: true
+//   },
+//   status: {
+//     type: String,
+//     enum: ['pending', 'completed', 'cancelled'],
+//     default: 'pending'
+//   },
+//   trackingStatus: {
+//     type: String,
+//     enum: ['paid', 'meeting_scheduled', 'item_received', 'completed', 'refunded'],
+//     default: 'paid'
+//   },
+//   refundReason: String // For retract requests
+// }, { timestamps: true });
+
+// module.exports = mongoose.model('Order', orderSchema);
+
+// models/Order.js
 const mongoose = require('mongoose');
 
-const orderSchema = new mongoose.Schema({
-  buyer: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  seller: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  item: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Item',
-    required: true
-  },
-  price: {
-    type: Number,
-    required: true
-  },
-  paymentReference: {
+const OrderSchema = new mongoose.Schema({
+  buyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', required: true },
+  price: { type: Number, required: true },
+  paymentReference: { type: String, required: true },
+  status: { type: String, enum: ['pending', 'completed', 'cancelled'], default: 'pending' }, // Legacy
+  trackingStatus: {
     type: String,
-    required: true,
-    unique: true
+    enum: ['paid', 'meeting_scheduled', 'item_received', 'completed', 'refund_requested', 'refunded'],
+    default: 'paid'
   },
-  status: {
-    type: String,
-    enum: ['pending', 'completed', 'cancelled'],
-    default: 'pending'
-  }
-}, { timestamps: true });
+  refundReason: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = mongoose.model('Order', OrderSchema);
