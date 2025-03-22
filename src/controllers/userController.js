@@ -29,24 +29,24 @@
 // };
 
 // exports.login = async (req, res) => {
-//   const { email, password } = req.body;
+  // const { email, password } = req.body;
 
-//   try {
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+  // try {
+  //   const user = await User.findOne({ email });
+  //   if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+  //   const isMatch = await bcrypt.compare(password, user.password);
+  //   if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-//     const payload = { user: { id: user._id, username: user.username } }; // Use _id for MongoDB
-//     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
-//       if (err) throw err;
-//       res.json({ token, user: { id: user._id, name: user.username } }); // Include user ID in response
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server error');
-//   }
+  //   const payload = { user: { id: user._id, username: user.username } }; // Use _id for MongoDB
+  //   jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+  //     if (err) throw err;
+  //     res.json({ token, user: { id: user._id, name: user.username } }); // Include user ID in response
+  //   });
+  // } catch (err) {
+  //   console.error(err.message);
+  //   res.status(500).send('Server error');
+  // }
 // };
 
 // controllers/userController.js
@@ -166,17 +166,42 @@ exports.googleSignup = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  // ... (keep existing login function)
-  // Add check for isVerified
   const { email, password } = req.body;
+
   try {
+    // Find user by email
     const user = await User.findOne({ email });
-    if (!user || !user.isVerified) {
-      return res.status(400).json({ message: 'Email not verified or invalid credentials' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
-    // ... rest of the login logic remains the same
+
+    // Check if user is verified
+    if (!user.isVerified) {
+      return res.status(400).json({ message: 'Email not verified' });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Create JWT payload
+    const payload = { user: { id: user._id, username: user.username } };
+
+    // Sign JWT and send response
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+      if (err) {
+        console.error('JWT signing error:', err.message);
+        throw err;
+      }
+      res.json({
+        token,
+        user: { id: user._id, name: user.username, email: user.email } // Include necessary user details
+      });
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Login error:', err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 };
