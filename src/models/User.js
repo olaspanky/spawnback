@@ -24,7 +24,13 @@ const UserSchema = new mongoose.Schema({
   rating: { type: Number, default: 0 },
   ratingCount: { type: Number, default: 0 },
   scamReports: { type: Number, default: 0 },
+  googleId: { type: String },
+  isVerified: { type: Boolean, default: false },
+  otp: { type: String },
+  otpExpires: { type: Date },
   paystackRecipientCode: { type: String }, // Store this after seller onboarding
 });
+
+
 
 module.exports = mongoose.model('User', UserSchema);

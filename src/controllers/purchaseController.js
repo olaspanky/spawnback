@@ -3,6 +3,8 @@ const Order = require('../models/Order');
 const Item = require('../models/Items'); // Fixed typo: Items -> Item
 const User = require('../models/User'); // Assuming you have a User model
 const axios = require('axios');
+const { sendBuyerFollowUpEmail, sendSellerNotificationEmail } = require('./emailController');
+
 
 exports.createOrder = async (req) => {
   try {
@@ -106,10 +108,24 @@ exports.verifyPayment = async (req, res) => {
       user: { id: req.user.id },
     });
 
+    // Fetch additional data for email notifications
+    const buyer = await User.findById(order.buyer);
+    const item = await Item.findById(order.item);
+    const seller = await User.findById(order.seller);
+
+    // Send emails after successful order creation
+    try {
+      // Modified buyer email with conditional meeting details
+      await sendBuyerFollowUpEmail(buyer, order, item);
+      await sendSellerNotificationEmail(seller, order, item, buyer);
+    } catch (emailError) {
+      console.error("Email Sending Error:", emailError.message);
+    }
+
     res.json({
       success: true,
       order,
-      redirectUrl: `/declutter/purchases/${order._id}`, // Added for frontend redirect
+      redirectUrl: `/declutter/purchases/${order._id}`,
       message: 'Payment verified and order created successfully',
     });
   } catch (error) {
@@ -120,6 +136,7 @@ exports.verifyPayment = async (req, res) => {
     });
   }
 };
+
 
 exports.getOrderById = async (req, res) => {
     try {
