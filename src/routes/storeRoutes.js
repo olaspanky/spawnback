@@ -7,7 +7,7 @@ const {
   updateStoreItemQuantity,
   togglePackageDeal,
   getUserStores, getAllStores
-} = require('../controllers/storecontroller');
+} = require('../controllers/storeController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
