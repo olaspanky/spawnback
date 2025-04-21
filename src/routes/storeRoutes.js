@@ -2,11 +2,15 @@ const express = require('express');
 const {
   createStore,
   addStoreItem,
+  editStoreItem,
+  deleteStoreItem,
   createPackageDeal,
   getStore,
   updateStoreItemQuantity,
   togglePackageDeal,
-  getUserStores, getAllStores
+  getUserStores,
+  getAllStores,
+
 } = require('../controllers/storeController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -15,6 +19,8 @@ const router = express.Router();
 // Store Routes
 router.post('/', authMiddleware, createStore);
 router.post('/item', authMiddleware, addStoreItem);
+router.put('/item/:itemId', authMiddleware, editStoreItem);
+router.delete('/item/:itemId', authMiddleware, deleteStoreItem);
 router.post('/package', authMiddleware, createPackageDeal);
 router.get('/store', getAllStores);                      // Move this up
 router.get('/user/:userId', getUserStores);
