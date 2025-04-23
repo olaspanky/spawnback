@@ -125,7 +125,7 @@ exports.verifyPayment = async (req, res) => {
     res.json({
       success: true,
       order,
-      redirectUrl: `/declutter/purchases/${order._id}`,
+      redirectUrl: `/declutter/purchase/${order._id}`,
       message: 'Payment verified and order created successfully',
     });
   } catch (error) {

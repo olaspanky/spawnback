@@ -11,6 +11,8 @@ const itemRoutes = require('./routes/itemRoutes');
 const authRoutes = require('./routes/authRoutes');
 const purchaseRoutes = require('./routes/purchaseRoutes');
 const storeRoutes = require('./routes/storeRoutes');
+const paymentRoutes = require('./routes/payment'); // Adjust path as needed
+
 
 const app = express();
 
@@ -36,5 +38,7 @@ app.use('/api', messageRoutes);
 app.use('/api', itemRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/store', storeRoutes);
+app.use('/api/payment', paymentRoutes);
+
       
 module.exports = app;
