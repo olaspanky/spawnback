@@ -1,8 +1,103 @@
 const Item = require('../models/Items');
 
+// exports.createItem = async (req, res) => {
+//   try {
+//     const { title, price, description, location, category, images } = req.body;
+
+//     const item = new Item({
+//       title,
+//       price,
+//       description,
+//       location,
+//       category,
+//       images,
+//       seller: req.user.id
+//     });
+
+//     await item.save();
+//     res.json(item);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server error');
+//   }
+// };
 exports.createItem = async (req, res) => {
   try {
-    const { title, price, description, location, category, images } = req.body;
+    const {
+      title,
+      price,
+      description,
+      location,
+      category,
+      condition,
+      brand,
+      model,
+      year,
+      dimensions,
+      delivery,
+      reason,
+      contact,
+      images,
+    } = req.body;
+
+    // Manual validation
+    if (!title || title.length < 10 || title.length > 100) {
+      return res.status(400).json({ msg: 'Title must be between 10 and 100 characters' });
+    }
+    if (!price || isNaN(price) || price < 1000) {
+      return res.status(400).json({ msg: 'Price must be at least ₦1,000' });
+    }
+    if (!location) {
+      return res.status(400).json({ msg: 'Location is required' });
+    }
+    const validCategories = [
+      'Electronics',
+      'Fashion',
+      'Furniture',
+      'Home & Appliances',
+      'Books & Media',
+      'Sports & Outdoors',
+      'Toys & Games',
+      'Vehicles',
+      'Collectibles',
+      'Other',
+    ];
+    if (!category || !validCategories.includes(category)) {
+      return res.status(400).json({ msg: 'Invalid category' });
+    }
+    const validConditions = ['Brand New', 'Used - Like New', 'Used - Good', 'Used - Fair', 'For Parts'];
+    if (!condition || !validConditions.includes(condition)) {
+      return res.status(400).json({ msg: 'Invalid condition' });
+    }
+    if (!images || !Array.isArray(images) || images.length < 2 || images.length > 4) {
+      return res.status(400).json({ msg: 'Must upload between 2 and 4 images' });
+    }
+    if (description && description.length > 1000) {
+      return res.status(400).json({ msg: 'Description cannot exceed 1,000 characters' });
+    }
+    if (brand && brand.length > 50) {
+      return res.status(400).json({ msg: 'Brand cannot exceed 50 characters' });
+    }
+    if (model && model.length > 50) {
+      return res.status(400).json({ msg: 'Model cannot exceed 50 characters' });
+    }
+    if (year && (isNaN(year) || year < 1900 || year > new Date().getFullYear())) {
+      return res.status(400).json({ msg: 'Year must be between 1900 and current year' });
+    }
+    if (dimensions && dimensions.length > 100) {
+      return res.status(400).json({ msg: 'Dimensions cannot exceed 100 characters' });
+    }
+    const validDelivery = ['', 'Local Pickup', 'Delivery', 'Shipping'];
+    if (delivery && !validDelivery.includes(delivery)) {
+      return res.status(400).json({ msg: 'Invalid delivery option' });
+    }
+    if (reason && reason.length > 200) {
+      return res.status(400).json({ msg: 'Reason cannot exceed 200 characters' });
+    }
+    const validContact = ['', 'App Chat', 'Phone', 'WhatsApp'];
+    if (contact && !validContact.includes(contact)) {
+      return res.status(400).json({ msg: 'Invalid contact preference' });
+    }
 
     const item = new Item({
       title,
@@ -10,8 +105,16 @@ exports.createItem = async (req, res) => {
       description,
       location,
       category,
+      condition,
+      brand,
+      model,
+      year,
+      dimensions,
+      delivery,
+      reason,
+      contact,
       images,
-      seller: req.user.id
+      seller: req.user.id,
     });
 
     await item.save();
