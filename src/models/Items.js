@@ -12,6 +12,12 @@ const ItemSchema = new mongoose.Schema({
     required: [true, 'Price is required'],
     min: [1000, 'Price must be at least ₦1,000'],
   },
+  quantity: {
+    type: Number,
+    required: [true, 'Quantity is required'],
+    min: [0, 'Quantity cannot be negative'],
+    default: 1, // Default to 1 if not specified
+  },
   description: {
     type: String,
     maxlength: [1000, 'Description cannot exceed 1,000 characters'],
