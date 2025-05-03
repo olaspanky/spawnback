@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const Item = require('../models/Item'); // Fixed typo: Items -> Item
+const Item = require('../models/Items'); // Fixed typo: Items -> Item
 const User = require('../models/User');
 const axios = require('axios');
 const { sendBuyerFollowUpEmail, sendSellerNotificationEmail } = require('./emailController');
