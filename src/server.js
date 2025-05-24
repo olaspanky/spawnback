@@ -7,9 +7,10 @@ const Message = require('./models/Message');
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://spawn-nine.vercel.app"], // Allow frontend URLs
+    origin: "*", // Allow any origin (use only for dev)
     methods: ["GET", "POST"]
   }
+  
 });
 
 io.on('connection', (socket) => {
