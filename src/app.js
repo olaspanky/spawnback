@@ -36,7 +36,6 @@ app.use('/api/users', userRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', itemRoutes);
 app.use('/api/purchases', purchaseRoutes);
-app.use('/api/store', storeRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/shopping-lists', shoppingListRoutes); // Add this
 
