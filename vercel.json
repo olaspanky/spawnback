@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "app.js": {
+    "index.js": {
       "maxDuration": 10
     }
   }
