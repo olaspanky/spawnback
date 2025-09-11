@@ -77,6 +77,10 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET
 });
 
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api', messageRoutes);
