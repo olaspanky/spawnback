@@ -1,4 +1,4 @@
-// index.js - Root entry point for Vercel
+// index.js
 const app = require('./src/app');
 
 // For Vercel, export the app directly
