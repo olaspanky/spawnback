@@ -76,7 +76,7 @@ exports.signup = async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
-    user = new User({ username, email, password, isVerified: false });
+    user = new User({ username, email, password, isVerified: false, isAdmin: false });
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
 
@@ -96,10 +96,13 @@ exports.signup = async (req, res) => {
     });
     console.log('OTP email sent successfully');
 
-    const payload = { user: { id: user.id } };
+    const payload = { user: { id: user.id, isAdmin: user.isAdmin || false, isVerified: user.isVerified || false } };
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
       if (err) throw err;
-      res.json({ token, message: 'OTP sent to your email' });
+      res.json({
+        token,
+        user: { id: user._id, name: user.username, email: user.email, isAdmin: user.isAdmin || false, isVerified: false }
+      });
     });
   } catch (err) {
     console.error('Signup error:', err.message);
@@ -187,7 +190,14 @@ exports.login = async (req, res) => {
     }
 
     // Create JWT payload
-    const payload = { user: { id: user._id, username: user.username } };
+    const payload = {
+      user: {
+        id: user._id,
+        username: user.username,
+        isAdmin: user.isAdmin || false, // Include isAdmin
+        isVerified: user.isVerified || false // Include isVerified
+      }
+    };
 
     // Sign JWT and send response
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
@@ -195,10 +205,18 @@ exports.login = async (req, res) => {
         console.error('JWT signing error:', err.message);
         throw err;
       }
-      res.json({
+      const response = {
         token,
-        user: { id: user._id, name: user.username, email: user.email } // Include necessary user details
-      });
+        user: {
+          id: user._id,
+          name: user.username,
+          email: user.email,
+          isAdmin: user.isAdmin || false, // Include isAdmin
+          isVerified: user.isVerified || false // Include isVerified
+        }
+      };
+      console.log('Login response:', response); // Log the response
+      res.json(response);
     });
   } catch (err) {
     console.error('Login error:', err.message);
