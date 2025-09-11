@@ -19,7 +19,7 @@ router.post('/paystack/initialize', async (req, res) => {
           email,
           amount: amount * 100,
           currency: 'NGN',
-          callback_url: `http://localhost:5000/api/payment/paystack/callback`,
+          callback_url: `https://spawnback.vercel.app/api/payment/paystack/callback`,
           metadata: {
             custom_fields: [
               { display_name: 'User ID', variable_name: 'user_id', value: userId },
@@ -83,7 +83,7 @@ router.get('/paystack/callback', async (req, res) => {
   
         // Call the existing verification endpoint with the token
         const verifyResponse = await axios.post(
-          'http://localhost:5000/api/purchases/verify-payment',
+          'https://spawnback.vercel.app/api/purchases/verify-payment',
           {
             reference,
             itemID: productId,
