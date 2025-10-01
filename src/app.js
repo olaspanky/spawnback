@@ -58,7 +58,7 @@ const purchaseRoutes = require('./routes/purchaseRoutes');
 const storeRoutes = require('./routes/storeRoutes');
 const paymentRoutes = require('./routes/payment');
 const shoppingListRoutes = require('./routes/shoppingListRoutes'); // Add this
-
+const waitlistRoutes = require('./routes/waitlistRoutes'); // Add this
 const app = express();
 
 // Middleware
@@ -89,5 +89,7 @@ app.use('/api/purchases', purchaseRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/shopping-lists', shoppingListRoutes); // Add this
+app.use('/api', waitlistRoutes); // Add this
+
 
 module.exports = app;
