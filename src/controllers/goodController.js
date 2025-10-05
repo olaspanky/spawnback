@@ -1,6 +1,8 @@
 const Good = require('../models/Good');
 const cloudinary = require('../../config/cloudinary');
 const upload = require('../middlewares/multer');
+const Purchase = require('../models/Purchase'); // Add this import
+
 
 // Categories enum for validation
 const CATEGORIES = {
@@ -327,6 +329,139 @@ const getCategoryStats = async (req, res) => {
   }
 };
 
+
+const confirmPayment = async (req, res) => {
+  try {
+    const { cart, paymentReference } = req.body;
+    const userId = req.user.id; // From authMiddleware
+
+    // Validate inputs
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ message: 'Cart is required and must not be empty' });
+    }
+    if (!paymentReference || typeof paymentReference !== 'string') {
+      return res.status(400).json({ message: 'Payment reference is required' });
+    }
+
+    // Validate cart items and calculate total
+    let totalAmount = 0;
+    const purchaseItems = [];
+
+    for (const cartItem of cart) {
+      const { storeId, item, quantity } = cartItem;
+
+      if (!storeId || !item?._id || !quantity || quantity < 1) {
+        return res.status(400).json({ message: 'Invalid cart item format' });
+      }
+
+      // Verify the item exists in the database
+      const good = await Good.findById(item._id);
+      if (!good) {
+        return res.status(404).json({ message: `Item with ID ${item._id} not found` });
+      }
+      if (!good.available) {
+        return res.status(400).json({ message: `Item ${good.name} is not available` });
+      }
+
+      // Validate price consistency
+      if (item.price !== good.price) {
+        return res.status(400).json({ message: `Price mismatch for item ${good.name}` });
+      }
+
+      totalAmount += good.price * quantity;
+
+      purchaseItems.push({
+        storeId,
+        item: {
+          _id: good._id,
+          name: good.name,
+          price: good.price,
+          quantity,
+        },
+      });
+    }
+
+    // Create purchase record
+    const purchase = new Purchase({
+      userId,
+      items: purchaseItems,
+      totalAmount,
+      paymentReference,
+      status: 'pending', // Admin will confirm after verifying payment
+    });
+
+    await purchase.save();
+
+    res.status(200).json({
+      message: 'Payment reference submitted successfully',
+      purchaseId: purchase._id,
+    });
+  } catch (err) {
+    console.error('Confirm payment error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+};
+
+// Get all purchases (admin only)
+const getAllPurchases = async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const purchases = await Purchase.find()
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 });
+
+    res.json(purchases);
+  } catch (err) {
+    console.error('Get all purchases error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+};
+
+// Get user purchases
+const getUserPurchases = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const purchases = await Purchase.find({ userId })
+      .sort({ createdAt: -1 });
+    res.json(purchases);
+  } catch (err) {
+    console.error('Get user purchases error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+};
+
+const updatePurchaseStatus = async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const { purchaseId } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const purchase = await Purchase.findById(purchaseId);
+    if (!purchase) {
+      return res.status(404).json({ message: 'Purchase not found' });
+    }
+
+    purchase.status = status;
+    await purchase.save();
+
+    res.json({ message: `Purchase status updated to ${status}`, purchase });
+  } catch (err) {
+    console.error('Update purchase status error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+};
+
+// Add to exports
 module.exports = {
   createGood: [upload.single('image'), createGood],
   updateGood: [upload.single('image'), updateGood],
@@ -336,5 +471,9 @@ module.exports = {
   getGood,
   toggleAvailability,
   getCategoryStats,
-  CATEGORIES
+  confirmPayment,
+  getAllPurchases,
+  getUserPurchases,
+  updatePurchaseStatus,
+  CATEGORIES,
 };

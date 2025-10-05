@@ -8,11 +8,21 @@ const {
   getGood,
   toggleAvailability,
   getCategoryStats,
-  CATEGORIES
+  confirmPayment,
+  getAllPurchases,
+  getUserPurchases,
+  updatePurchaseStatus,
+  CATEGORIES,
 } = require('../controllers/goodController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
+
+// Payment and purchase routes (specific routes first)
+router.post('/confirm-payment', authMiddleware, confirmPayment);
+router.get('/purchases/all', authMiddleware, getAllPurchases);
+router.get('/purchases', authMiddleware, getUserPurchases); // Moved before /:goodId
+router.put('/purchases/:purchaseId/status', authMiddleware, updatePurchaseStatus);
 
 // Goods Routes (admin only for create, update, delete)
 router.post('/goods', authMiddleware, createGood);
@@ -22,9 +32,9 @@ router.put('/:goodId/availability', authMiddleware, toggleAvailability);
 
 // Public routes
 router.get('/goods', getAllGoods);
-router.get('/categories', (req, res) => res.json(CATEGORIES)); // Get available categories
+router.get('/categories', (req, res) => res.json(CATEGORIES));
 router.get('/category/:category', getGoodsByCategory);
 router.get('/stats', getCategoryStats);
-router.get('/:goodId', getGood);
+router.get('/:goodId', getGood); // Dynamic route last
 
 module.exports = router;
