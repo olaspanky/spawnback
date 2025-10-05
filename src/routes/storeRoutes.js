@@ -16,8 +16,8 @@ const router = express.Router();
 
 // Goods Routes (admin only for create, update, delete)
 router.post('/goods', authMiddleware, createGood);
-router.put('/:goodId', authMiddleware, updateGood);
-router.delete('/:goodId', authMiddleware, deleteGood);
+router.put('/goods/:goodId', authMiddleware, updateGood);
+router.delete('/goods/:goodId', authMiddleware, deleteGood);
 router.put('/:goodId/availability', authMiddleware, toggleAvailability);
 
 // Public routes
