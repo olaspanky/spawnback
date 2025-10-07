@@ -332,7 +332,7 @@ const getCategoryStats = async (req, res) => {
 
 const confirmPayment = async (req, res) => {
   try {
-    const { cart, paymentReference } = req.body;
+    const { cart, paymentReference, serviceCharge, deliveryFee, dropOffLocation, addressDetails } = req.body;
     const userId = req.user.id; // From authMiddleware
 
     // Validate inputs
@@ -342,9 +342,21 @@ const confirmPayment = async (req, res) => {
     if (!paymentReference || typeof paymentReference !== 'string') {
       return res.status(400).json({ message: 'Payment reference is required' });
     }
+    if (!dropOffLocation || typeof dropOffLocation !== 'string') {
+      return res.status(400).json({ message: 'Drop-off location is required' });
+    }
+    if (!addressDetails || typeof addressDetails !== 'string') {
+      return res.status(400).json({ message: 'Address details are required' });
+    }
+    if (typeof serviceCharge !== 'number' || serviceCharge < 0) {
+      return res.status(400).json({ message: 'Service charge must be a non-negative number' });
+    }
+    if (typeof deliveryFee !== 'number' || deliveryFee < 0) {
+      return res.status(400).json({ message: 'Delivery fee must be a non-negative number' });
+    }
 
-    // Validate cart items and calculate total
-    let totalAmount = 0;
+    // Validate cart items and calculate subtotal
+    let subtotal = 0;
     const purchaseItems = [];
 
     for (const cartItem of cart) {
@@ -368,7 +380,7 @@ const confirmPayment = async (req, res) => {
         return res.status(400).json({ message: `Price mismatch for item ${good.name}` });
       }
 
-      totalAmount += good.price * quantity;
+      subtotal += good.price * quantity;
 
       purchaseItems.push({
         storeId,
@@ -381,11 +393,21 @@ const confirmPayment = async (req, res) => {
       });
     }
 
+    // Validate total amount (subtotal + serviceCharge + deliveryFee)
+    const totalAmount = subtotal + serviceCharge + deliveryFee;
+    if (totalAmount <= 0) {
+      return res.status(400).json({ message: 'Total amount must be greater than zero' });
+    }
+
     // Create purchase record
     const purchase = new Purchase({
       userId,
       items: purchaseItems,
       totalAmount,
+      serviceCharge,
+      deliveryFee,
+      dropOffLocation,
+      addressDetails,
       paymentReference,
       status: 'pending', // Admin will confirm after verifying payment
     });

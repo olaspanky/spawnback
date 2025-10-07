@@ -75,7 +75,7 @@ const sendBuyerFollowUpEmail = async (buyer, purchase, item) => {
       </div>
 
       <p style="text-align: center; margin: 30px 0;">
-        <a href="https://spawn-nine.vercel.app/declutter/purchase/${purchase._id}" class="button">
+        <a href="https://ojarunz.ng/declutter/purchase/${purchase._id}" class="button">
           Track Your Order
         </a>
       </p>
@@ -129,7 +129,7 @@ const sendSellerNotificationEmail = async (seller, purchase, item, buyer) => {
       </div>
 
       <p style="text-align: center; margin: 30px 0;">
-        <a href="https://spawn-nine.vercel.app/declutter/manage-items" class="button">
+        <a href="https://ojarunz.ng/declutter/manage-items" class="button">
           Manage Orders
         </a>
       </p>
