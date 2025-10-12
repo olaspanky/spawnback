@@ -137,6 +137,8 @@ goodSchema.virtual('categoryDisplay').get(function() {
   const categoryMap = {
     'market_area': 'Market Area',
     'package_deals': 'Package Deals',
+    'meal_prep': 'Meal Prep',
+    'frozen_foods': 'Frozen Foods',
     'drinks': 'Drinks',
     'provisions_groceries': 'Provisions & Groceries'
   };
