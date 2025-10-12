@@ -426,6 +426,113 @@ const confirmPayment = async (req, res) => {
   }
 };
 
+// Add this new controller function in your goods controller
+const confirmGuestPayment = async (req, res) => {
+  try {
+    const { cart, paymentReference, serviceCharge, deliveryFee, dropOffLocation, addressDetails, guestInfo } = req.body;
+
+    // Validate guest info
+    if (!guestInfo || !guestInfo.name || !guestInfo.phone || !guestInfo.email) {
+      return res.status(400).json({ message: 'Guest information (name, phone, email) is required' });
+    }
+
+    // Validate inputs
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ message: 'Cart is required and must not be empty' });
+    }
+    if (!paymentReference || typeof paymentReference !== 'string') {
+      return res.status(400).json({ message: 'Payment reference is required' });
+    }
+    if (!dropOffLocation || typeof dropOffLocation !== 'string') {
+      return res.status(400).json({ message: 'Drop-off location is required' });
+    }
+    if (!addressDetails || typeof addressDetails !== 'string') {
+      return res.status(400).json({ message: 'Address details are required' });
+    }
+    if (typeof serviceCharge !== 'number' || serviceCharge < 0) {
+      return res.status(400).json({ message: 'Service charge must be a non-negative number' });
+    }
+    if (typeof deliveryFee !== 'number' || deliveryFee < 0) {
+      return res.status(400).json({ message: 'Delivery fee must be a non-negative number' });
+    }
+
+    // Validate cart items and calculate subtotal
+    let subtotal = 0;
+    const purchaseItems = [];
+
+    for (const cartItem of cart) {
+      const { storeId, item, quantity } = cartItem;
+
+      if (!storeId || !item?._id || !quantity || quantity < 1) {
+        return res.status(400).json({ message: 'Invalid cart item format' });
+      }
+
+      // Verify the item exists in the database
+      const good = await Good.findById(item._id);
+      if (!good) {
+        return res.status(404).json({ message: `Item with ID ${item._id} not found` });
+      }
+      if (!good.available) {
+        return res.status(400).json({ message: `Item ${good.name} is not available` });
+      }
+
+      // Validate price consistency
+      if (item.price !== good.price) {
+        return res.status(400).json({ message: `Price mismatch for item ${good.name}` });
+      }
+
+      subtotal += good.price * quantity;
+
+      purchaseItems.push({
+        storeId,
+        item: {
+          _id: good._id,
+          name: good.name,
+          price: good.price,
+          quantity,
+        },
+      });
+    }
+
+    // Validate total amount (subtotal + serviceCharge + deliveryFee)
+    const totalAmount = subtotal + serviceCharge + deliveryFee;
+    if (totalAmount <= 0) {
+      return res.status(400).json({ message: 'Total amount must be greater than zero' });
+    }
+
+    // Create guest purchase record (without userId)
+    const purchase = new Purchase({
+      userId: null, // Guest user
+      guestInfo: {
+        name: guestInfo.name,
+        phone: guestInfo.phone,
+        email: guestInfo.email,
+      },
+      items: purchaseItems,
+      totalAmount,
+      serviceCharge,
+      deliveryFee,
+      dropOffLocation,
+      addressDetails,
+      paymentReference,
+      status: 'pending', // Admin will confirm after verifying payment
+    });
+
+    await purchase.save();
+
+    res.status(200).json({
+      message: 'Payment reference submitted successfully',
+      purchaseId: purchase._id,
+    });
+  } catch (err) {
+    console.error('Confirm guest payment error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+};
+
+// Add this route (no authMiddleware needed)
+router.post('/confirm-guest-payment', confirmGuestPayment);
+
 // Get all purchases (admin only)
 const getAllPurchases = async (req, res) => {
   try {

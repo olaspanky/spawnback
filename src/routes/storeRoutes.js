@@ -9,6 +9,7 @@ const {
   toggleAvailability,
   getCategoryStats,
   confirmPayment,
+  confirmGuestPayment, // Add this import
   getAllPurchases,
   getUserPurchases,
   updatePurchaseStatus,
@@ -20,6 +21,7 @@ const router = express.Router();
 
 // Payment and purchase routes (specific routes first)
 router.post('/confirm-payment', authMiddleware, confirmPayment);
+router.post('/confirm-guest-payment', confirmGuestPayment); // Add guest payment route (no auth)
 router.get('/purchases/all', authMiddleware, getAllPurchases);
 router.get('/purchases', authMiddleware, getUserPurchases); // Moved before /:goodId
 router.put('/purchases/:purchaseId/status', authMiddleware, updatePurchaseStatus);

@@ -1,55 +1,32 @@
-const mongoose = require('mongoose');
-
-const PurchaseSchema = new mongoose.Schema({
+const purchaseSchema = new Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false, // Changed to false to allow guest purchases
   },
-  items: [
-    {
-      storeId: { type: String, required: true }, // From cart, to identify store
-      item: {
-        _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Good', required: true },
-        name: { type: String, required: true },
-        price: { type: Number, required: true },
-        quantity: { type: Number, required: true },
-      },
+  guestInfo: {
+    name: { type: String },
+    phone: { type: String },
+    email: { type: String },
+  },
+  items: [{
+    storeId: { type: String, required: true },
+    item: {
+      _id: { type: Schema.Types.ObjectId, required: true },
+      name: { type: String, required: true },
+      price: { type: Number, required: true },
+      quantity: { type: Number, required: true },
     },
-  ],
-  totalAmount: {
-    type: Number,
-    required: true,
-  },
-  serviceCharge: {
-    type: Number,
-    required: true,
-  },
-  deliveryFee: {
-    type: Number,
-    required: true,
-  },
-  dropOffLocation: {
-    type: String,
-    required: true,
-  },
-  addressDetails: {
-    type: String,
-    required: true,
-  },
-  paymentReference: {
-    type: String,
-    required: true,
-  },
+  }],
+  totalAmount: { type: Number, required: true },
+  serviceCharge: { type: Number, required: true },
+  deliveryFee: { type: Number, required: true },
+  dropOffLocation: { type: String, required: true },
+  addressDetails: { type: String, required: true },
+  paymentReference: { type: String, required: true },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled'],
+    enum: ['pending', 'confirmed', 'delivered', 'cancelled'],
     default: 'pending',
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-module.exports = mongoose.model('Purchase', PurchaseSchema);
+}, { timestamps: true });
