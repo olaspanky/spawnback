@@ -56,7 +56,7 @@ const goodSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['market_area', 'package_deals', 'drinks', 'provisions_groceries']
+    enum: ['market_area', 'package_deals', 'drinks', 'provisions_groceries', 'meal_prep', 'frozen_foods']
   },
   image: {
     type: String,
