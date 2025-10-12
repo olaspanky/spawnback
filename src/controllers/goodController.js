@@ -426,7 +426,6 @@ const confirmPayment = async (req, res) => {
   }
 };
 
-// Add this new controller function in your goods controller
 const confirmGuestPayment = async (req, res) => {
   try {
     const { cart, paymentReference, serviceCharge, deliveryFee, dropOffLocation, addressDetails, guestInfo } = req.body;
@@ -436,12 +435,26 @@ const confirmGuestPayment = async (req, res) => {
       return res.status(400).json({ message: 'Guest information (name, phone, email) is required' });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(guestInfo.email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Validate phone number (basic validation)
+    if (guestInfo.phone.length < 11) {
+      return res.status(400).json({ message: 'Phone number must be at least 11 digits' });
+    }
+
     // Validate inputs
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({ message: 'Cart is required and must not be empty' });
     }
     if (!paymentReference || typeof paymentReference !== 'string') {
       return res.status(400).json({ message: 'Payment reference is required' });
+    }
+    if (paymentReference.length < 6) {
+      return res.status(400).json({ message: 'Payment reference must be at least 6 characters' });
     }
     if (!dropOffLocation || typeof dropOffLocation !== 'string') {
       return res.status(400).json({ message: 'Drop-off location is required' });
@@ -504,9 +517,9 @@ const confirmGuestPayment = async (req, res) => {
     const purchase = new Purchase({
       userId: null, // Guest user
       guestInfo: {
-        name: guestInfo.name,
-        phone: guestInfo.phone,
-        email: guestInfo.email,
+        name: guestInfo.name.trim(),
+        phone: guestInfo.phone.trim(),
+        email: guestInfo.email.trim().toLowerCase(),
       },
       items: purchaseItems,
       totalAmount,
@@ -521,7 +534,7 @@ const confirmGuestPayment = async (req, res) => {
     await purchase.save();
 
     res.status(200).json({
-      message: 'Payment reference submitted successfully',
+      message: 'Payment reference submitted successfully. We will verify and process your order.',
       purchaseId: purchase._id,
     });
   } catch (err) {
@@ -530,8 +543,7 @@ const confirmGuestPayment = async (req, res) => {
   }
 };
 
-// Add this route (no authMiddleware needed)
-router.post('/confirm-guest-payment', confirmGuestPayment);
+
 
 // Get all purchases (admin only)
 const getAllPurchases = async (req, res) => {
@@ -603,6 +615,7 @@ module.exports = {
   toggleAvailability,
   getCategoryStats,
   confirmPayment,
+  confirmGuestPayment,
   getAllPurchases,
   getUserPurchases,
   updatePurchaseStatus,
