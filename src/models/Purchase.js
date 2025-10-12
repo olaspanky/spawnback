@@ -45,7 +45,10 @@ const PurchaseSchema = new mongoose.Schema({
     required: true,
   },
   deliveryType: {
-    type: any,
+    type: String,
+  },
+  expectedDelivery: {
+    type: String,
   },
   dropOffLocation: {
     type: String,
