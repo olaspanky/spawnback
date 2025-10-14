@@ -1,58 +1,3 @@
-// // controllers/userController.js
-// const User = require('../models/User');
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
-
-// exports.signup = async (req, res) => {
-//   const { username, email, password } = req.body;
-
-//   try {
-//     let user = await User.findOne({ email });
-//     if (user) return res.status(400).json({ message: 'User already exists' });
-
-//     user = new User({ username, email, password });
-
-//     const salt = await bcrypt.genSalt(10);
-//     user.password = await bcrypt.hash(password, salt);
-
-//     await user.save();
-
-//     const payload = { user: { id: user.id } };
-//     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
-//       if (err) throw err;
-//       res.json({ token });
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server error');
-//   }
-// };
-
-// exports.login = async (req, res) => {
-  // const { email, password } = req.body;
-
-  // try {
-  //   const user = await User.findOne({ email });
-  //   if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-  //   const isMatch = await bcrypt.compare(password, user.password);
-  //   if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-  //   const payload = { user: { id: user._id, username: user.username } }; // Use _id for MongoDB
-  //   jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
-  //     if (err) throw err;
-  //     res.json({ token, user: { id: user._id, name: user.username } }); // Include user ID in response
-  //   });
-  // } catch (err) {
-  //   console.error(err.message);
-  //   res.status(500).send('Server error');
-  // }
-// };
-
-// controllers/userController.js
-
-
-
 
 
 
@@ -138,6 +83,45 @@ exports.verifyOTP = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+};
+
+exports.resendOTP = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Check if user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'Email already verified' });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+
+    await user.save();
+
+    // Send OTP email
+    console.log(`Resending OTP ${otp} to ${email}`);
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Verify Your Email - New OTP',
+      text: `Your new OTP is ${otp}. It expires in 10 minutes.`,
+    });
+    console.log('OTP resent successfully');
+
+    res.json({ message: 'OTP resent successfully. Please check your email.' });
+  } catch (err) {
+    console.error('Resend OTP error:', err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
