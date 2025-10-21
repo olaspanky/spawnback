@@ -30,6 +30,8 @@ const UserSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpires: { type: Date },
   paystackRecipientCode: { type: String }, // Store this after seller onboarding
+   resetPasswordToken: { type: String }, // Add this
+  resetPasswordExpires: { type: Date }, // Add this
 });
 
 
